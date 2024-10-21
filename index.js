@@ -67,6 +67,11 @@ app.post('/login', (req, res) => {
     });
 });
 
+// Root Endpoint
+app.get('/', (req, res) => {
+    res.send('Heatlh is fine');
+  });
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
