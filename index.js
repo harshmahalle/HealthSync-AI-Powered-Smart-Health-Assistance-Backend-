@@ -6,7 +6,7 @@ const allowedOrigins = ['https://healthsync-bkju.onrender.com'];
 require('dotenv').config();
 
 const app = express();
-const port = 3001;
+const port = 3306;
 
 // Enable CORS to allow requests from frontend
 app.use(cors({
