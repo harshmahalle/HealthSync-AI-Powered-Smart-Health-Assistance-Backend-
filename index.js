@@ -2,18 +2,13 @@ const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
-const allowedOrigins = ['https://health-sync.netlify.app/']; 
-require('dotenv').config();
-
 const app = express();
+
 const port = 3306;
 
-// Enable CORS to allow requests from frontend
-app.use(cors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-  }));
+require('dotenv').config();
+
+app.use(cors({ origin: 'https://health-sync.netlify.app' }));
   
 app.use(express.json());
 
