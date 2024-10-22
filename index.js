@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
-const allowedOrigins = ['https://healthsync-bkju.onrender.com']; 
+const allowedOrigins = ['https://health-sync.netlify.app/']; 
 require('dotenv').config();
 
 const app = express();
@@ -69,7 +69,7 @@ app.post('/login', (req, res) => {
 
 // Root Endpoint
 app.get('/', (req, res) => {
-    res.send('Heatlh is fine');
+    res.send('My Heatlh is fine');
   });
 
 app.listen(port, () => {
