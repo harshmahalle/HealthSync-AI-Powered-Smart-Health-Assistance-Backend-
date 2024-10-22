@@ -8,6 +8,8 @@ const port = 3306;
 
 require('dotenv').config();
 
+
+
 const allowedOrigins = [
   'https://health-sync.netlify.app',
   'https://healthsync-bkju.onrender.com'
@@ -24,6 +26,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+  
+app.use(express.json());
 
 // MySQL connection
 const db = mysql.createConnection({
