@@ -1,15 +1,14 @@
 const express = require('express');
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
-const app = express();
-
-const port = 3306;
-
+const User = require('./models/User'); 
 require('dotenv').config();
 
+const app = express();
+const port = process.env.PORT || 3300;
 
-
+// CORS configuration
 const allowedOrigins = [
   'https://health-sync.netlify.app',
   'https://healthsync-bkju.onrender.com'
@@ -26,64 +25,61 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-  
 app.use(express.json());
 
-// MySQL connection
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-});
-
-db.connect(err => {
-    if (err) {
-        console.error('Error connecting to MySQL:', err);
-        return;
-    }
-    console.log('Connected to MySQL database.');
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log('Connected to MongoDB database.');
+}).catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
 });
 
 // Register route
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
     const { fullName, email, password } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    db.query('INSERT INTO users (fullName, email, password) VALUES (?, ?, ?)',
-        [fullName, email, hashedPassword],
-        (err, result) => {
-            if (err) {
-                return res.status(400).json({ message: 'Error creating user' });
-            }
-            res.status(201).json({ message: 'User created successfully' });
-        });
+    const user = new User({
+        fullName,
+        email,
+        password: hashedPassword
+    });
+
+    try {
+        await user.save();
+        res.status(201).json({ message: 'User created successfully' });
+    } catch (err) {
+        res.status(400).json({ message: 'Error creating user', error: err.message });
+    }
 });
 
 // Login route
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-        if (err) throw err;
-        if (results.length > 0) {
-            const user = results[0];
-            if (bcrypt.compareSync(password, user.password)) {
-                res.json({ message: 'Login successful', user: { fullName: user.fullName, email: user.email } });
-            } else {
-                res.status(401).json({ message: 'Invalid credentials' });
-            }
+    try {
+        const user = await User.findOne({ email });
+        if (user && bcrypt.compareSync(password, user.password)) {
+            res.json({ message: 'Login successful', user: { fullName: user.fullName, email: user.email } });
         } else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(401).json({ message: 'Invalid credentials' });
         }
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
 });
 
 // Root Endpoint
 app.get('/', (req, res) => {
-    res.send('My Heatlh is fine');
-  });
+    res.send('My Health is fine');
+});
 
+// Start server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
+
+
